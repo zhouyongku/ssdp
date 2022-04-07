@@ -6,8 +6,25 @@ Mark:人脸识别客户端代码
 
 #ifndef CSSDPCLIENT_H
 #define CSSDPCLIENT_H
-#include"common.h"
+#include<string>
+#include<string.h>
+#include<queue>
+#include<stdio.h>
+#include<stdlib.h>
+#include<arpa/inet.h>
+#include<thread>
+#include<chrono>
+#include<unistd.h>
+#include<netinet/in.h>
+#include<arpa/inet.h>
+#include<net/if.h>
+#include<pthread.h>
+#include<fcntl.h>
+#define ERR printf
+#define RTM printf
+#define MAXSSDPSIZE 1024
 
+using namespace std;
 
 class CSSDPClient
 {

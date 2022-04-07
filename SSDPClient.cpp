@@ -14,11 +14,6 @@
  */
 
 #include"SSDPClient.h"
-#include"uuid/uuid.h"
-#include"configuserv.h"
-#include"sysinfo/sysinfo.h"
-#include"codec/md5.h"
-
 
 
 
@@ -155,11 +150,11 @@ string CSSDPClient::MakeSearchMsg()
     strMsg +="<?xml version=\"1.0\" encoding=\"utf-8\"?>\n";
     strMsg +="<Probe>\n";
         strMsg +="  <Uuid>";
-        strMsg += CUuid::Genuuid();
+        strMsg += "uuid-test";
         strMsg +="</Uuid>\n";
         strMsg +="  <Types>inquiry</Types>\n";
         strMsg +="  <DeviceType>";
-        strMsg += CConfiguserv::GetDeviceMode();
+        strMsg += "wodepingban";
         strMsg +="</DeviceType>\n";
     strMsg +="</Probe>";
     return strMsg;
@@ -173,27 +168,21 @@ string CSSDPClient::MakeModifyNetMsg()
     "%s\n"
     "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
     "<Probe>\n"
-    "<Uuid>%s</Uuid>\n"
+    "<Uuid>testuuid</Uuid>\n"
     "<Types>update</Types>\n"
-    "<DeviceSN>%s</DeviceSN>\n"
+    "<DeviceSN>123456sdflsdfjl1023-1asdfgh</DeviceSN>\n"
     "<method>modifyipdns</method>\n"
-    "<MAC>%s</MAC>\n"
-    "<IPv4Address>%s</IPv4Address>\n"
-    "<IPv4SubnetMask>%s</IPv4SubnetMask>\n"
-    "<IPv4Gateway>%s</IPv4Gateway>\n"
+    "<MAC>ab-cd-ef-gh-kh</MAC>\n"
+    "<IPv4Address>192.168.66.24</IPv4Address>\n"
+    "<IPv4SubnetMask>255.255.255.0</IPv4SubnetMask>\n"
+    "<IPv4Gateway>192.168.66.254</IPv4Gateway>\n"
     "<IPv6Address>::</IPv6Address>\n"
     "<IPv6Gateway>::</IPv6Gateway>\n"
     "<IPv6MaskLen>64</IPv6MaskLen>\n"
     "<DHCP>false</DHCP>\n"
     "<Password>kFnsMaQrzmGi89g+6txepC1RNnZMSi/fA16x+UdjFOmqBmoVCc/zeZ8X6oZmLBdWaXnvwTxjLIQBsLsDP0xjHw==</Password>\n"
     "</Probe>\n",
-    strMsg.c_str(),
-    CUuid::Genuuid().c_str(),
-    CConfiguserv::GetDeviceId().c_str(),
-    CSysInfo::GetdMac().c_str(),
-    CSysInfo::GetIp().c_str(),
-    CSysInfo::GetNetMask().c_str(),
-    CSysInfo::GetGateWay().c_str());
+    strMsg.c_str());
     return string(szMsg);
 
 }
@@ -202,27 +191,19 @@ string CSSDPClient::MakeModifyUserMsg()
 {
     string strMsg=MakeSSDHeader();
 
-    string strPwd=CConfiguserv::GetPwd();
-    MD5 m( strPwd.c_str(),strPwd.size());
-    string strPwdMd5 = m.toString();
 
     char szMsg[MAXSSDPSIZE]={0};
     sprintf( szMsg,
     "%s\n"
      "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"
      "<Probe>\n"
-     "<Uuid>%s>\n"
+     "<Uuid>your uuid>\n"
      "<Types>update</Types>\n"
-     "<DeviceSN>%s</DeviceSN>\n"
+     "<DeviceSN>your device sn</DeviceSN>\n"
      "<method>modifypassword</method>\n"
-     "<newpassword>%s</newpassword>\n"
-     "<Password>%s</Password>\n"
-     "</Probe>\n",
-    strMsg.c_str(),
-    CUuid::Genuuid().c_str(),
-    CConfiguserv::GetDeviceId().c_str(),
-    strPwdMd5.c_str(),
-    strPwdMd5.c_str());
+     "<newpassword>your new md5 password</newpassword>\n"
+     "<Password>your md5 password</Password>\n"
+     "</Probe>\n");
     return string(szMsg);
 }
 

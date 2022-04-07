@@ -15,27 +15,17 @@
 
 
 #include"SSDPServer.h"
-#include"uuid/uuid.h"
-#include"configuserv.h"
-#include"sysinfo/sysinfo.h"
-#include"codec/md5.h"
-#include"version/version.h"
-
-#define MAXEVENTS 10
-#define MAX_EP_TIMEOUT  5000
-#define MAX_UDP_MSG_LEN 10*1024
 
 CSSDPServer *CSSDPServer::g_in=NULL;
 //全局变量
 
 
 //解析IP地址
-CSSDPServer::CSSDPServer( bool bBox )
+CSSDPServer::CSSDPServer(  )
 {
-    m_bBox = bBox;
     m_mt=PTHREAD_MUTEX_INITIALIZER;
     m_cd=PTHREAD_COND_INITIALIZER;
-    RTM("CSSDPServer::CSSDPServer bBox=%d",bBox);
+    RTM("CSSDPServer::CSSDPServer");
     std::thread t([&]
     {
         RTM("CSSDPServer::CSSDPServer create thread");
@@ -52,57 +42,19 @@ CSSDPServer::CSSDPServer( bool bBox )
                 ProcesMsg( szMsg );
                 memset(szMsg,0,sizeof(szMsg));
             }
-            std::this_thread::sleep_for(std::chrono::milliseconds(10));
+            std::this_thread::sleep_for(std::chrono::seconds(10));
         }
     });
     t.detach();
 }
 void CSSDPServer::ProcesMsg( const char *strMsg )
 {
-//    <?xml version="1.0" encoding="utf-8"?>
-//    <Probe>
-//    <Uuid>B1D9AE01-1117-477F-98AB-F2FFEFA7B5F3</Uuid>
-//    <Types>inquiry</Types>
-//    <DeviceType>CDZSFACEPAD,CDZSFACEAIBOX</DeviceType>
-//    </Probe>
-
-//    SendMsg( MakeResponseSearchMsg() );
-//    return;
-    //printf("CSSDPServer::ProcesMsg msg=%s",strMsg);
-    const char *pXmlstr=strstr( strMsg,"<?xml");
-    if( !pXmlstr)
-    {
-        //printf("CSSDPServer::ProcesMsg failed of not found <?xml");
-        return;
-    }
+    //and your code here
 
 
-    TiXmlDocument doc;
-    doc.Parse( pXmlstr );
-    const TiXmlElement* pEle = doc.FirstChildElement("Probe");
-    if( !pEle )
-    {
-        //printf("CSSDPServer::ProcesMsg failed of not found Probe");
-        return;
-    }
 
 
-    const TiXmlElement *pUuid = pEle->FirstChildElement("Uuid");
-    const TiXmlElement *pTypes = pEle->FirstChildElement("Types");
-    const TiXmlElement *pDeviceType = pEle->FirstChildElement("DeviceType");
-
-    if( !pUuid||!pTypes||!pDeviceType )
-    {
-        //printf("CSSDPServer::ProcesMsg failed of not found uuid types devicetype");
-        return;
-    }
-
-    if( 0!=strcmp("inquiry",pTypes->GetText() ) ) return;
-
-    string strUuid = pUuid->GetText();
-
-
-    SendMsg( MakeResponseSearchMsg( strUuid ) );
+    SendMsg( MakeResponseSearchMsg( ) );
 
 
 }
@@ -113,11 +65,11 @@ CSSDPServer::~CSSDPServer()
 
 }
 
-CSSDPServer *CSSDPServer::Ins( bool bBox )
+CSSDPServer *CSSDPServer::Ins(  )
 {
     if( CSSDPServer::g_in == nullptr )
     {
-        CSSDPServer::g_in = new CSSDPServer( bBox );
+        CSSDPServer::g_in = new CSSDPServer(  );
     }
 
     return CSSDPServer::g_in;
@@ -191,9 +143,9 @@ void CSSDPServer::InitRecvSocket()
 
 }
 
-void CSSDPServer::Init( bool bBox )
+void CSSDPServer::Init( )
 {
-    CSSDPServer::Ins( bBox );
+    CSSDPServer::Ins(  );
 }
 
 
@@ -214,100 +166,38 @@ string CSSDPServer::MakeSSDHeader()
 }
 
 
-string CSSDPServer::MakeResponseSearchMsg( const string & strUuid)
+string CSSDPServer::MakeResponseSearchMsg()
 {
 
     string strMsg=MakeSSDHeader();
 
     char szMsg[MAXSSDPSIZE]={0};
-    if( m_bBox )
-    {
+
         snprintf( szMsg,MAXSSDPSIZE,
                   "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
                   "<ProbeMatch>\n"
-                  "<mount>%d</mount>\n"
-                  "<enable>%d</enable>\n"
+                  "<mount>your msg</mount>\n"
+                  "<enable>your msg</enable>\n"
                   "<platformip>%s</platformip>\n"
-                  "<Uuid>%s</Uuid>\n"
+                  "<Uuid>your msg</Uuid>\n"
                   "<Types>inquiry</Types>\n"
                   "<DeviceType>CDZSFACEBOX</DeviceType>\n"
-                  "<DeviceSN>%s</DeviceSN>\n"
-                  "<DeviceName>%s</DeviceName>\n"
-                  "<MAC>%s</MAC>\n"
-                  "<IPv4Address>%s</IPv4Address>\n"
-                  "<IPv4SubnetMask>%s</IPv4SubnetMask>\n"
-                  "<IPv4Gateway>%s</IPv4Gateway>\n"
+                  "<DeviceSN>your msg</DeviceSN>\n"
+                  "<DeviceName>your msg</DeviceName>\n"
+                  "<MAC>your msg</MAC>\n"
+                  "<IPv4Address>your msg</IPv4Address>\n"
+                  "<IPv4SubnetMask>your msg</IPv4SubnetMask>\n"
+                  "<IPv4Gateway>your msg</IPv4Gateway>\n"
                   "<IPv6Address>::</IPv6Address>\n"
                   "<IPv6Gateway>::</IPv6Gateway>\n"
                   "<IPv6MaskLen>64</IPv6MaskLen>\n"
                   "<DHCP>::</DHCP>\n"
-                  "<SoftwareVersion>%s</SoftwareVersion>\n"
-                  "<BootTime>%s</BootTime>\n"
-                  "<Diskrate>%s</Diskrate >\n"
-                  "<Cpurate>%s</Cpurate >\n"
+                  "<SoftwareVersion>your msg</SoftwareVersion>\n"
+                  "<BootTime>your msg</BootTime>\n"
+                  "<Diskrate>your msg</Diskrate >\n"
+                  "<Cpurate>your msg</Cpurate >\n"
                   "<Memoryrate>%s</Memoryrate >\n"
-                  "</ProbeMatch>",
-                  CConfiguserv::GetBMount(),
-                  CConfiguserv::GetBEnable(),
-                  CConfiguserv::GetPlatformIp().c_str(),
-                  strUuid.c_str(),
-                  CConfiguserv::GetDeviceId().c_str(),
-                  CConfiguserv::GetDeviceName().c_str(),
-                  CSysInfo::GetdMac().c_str(),
-                  CSysInfo::GetIp().c_str(),
-                  CSysInfo::GetSubMask().c_str(),
-                  CSysInfo::GetGateWay().c_str(),
-                  CVersion::GetVersion(),
-                  CSysInfo::GetLastRebootTime().c_str(),
-                  CSysInfo::GetDiskRate().c_str(),
-                  CSysInfo::GetCpuRate().c_str(),
-                  CSysInfo::GetMemoryRate().c_str());
-    }
-    else
-    {
-        snprintf( szMsg,MAXSSDPSIZE,
-                  "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
-                  "<ProbeMatch>\n"
-                  "<mount>%d</mount>\n"
-                  "<enable>%d</enable>\n"
-                  "<platformip>%s</platformip>\n"
-                  "<boxip>%s</boxip>\n"
-                  "<Uuid>%s</Uuid>\n"
-                  "<Types>inquiry</Types>\n"
-                  "<DeviceType>CDZSFACEPAD</DeviceType>\n"
-                  "<DeviceSN>%s</DeviceSN>\n"
-                  "<DeviceName>%s</DeviceName>\n"
-                  "<MAC>%s</MAC>\n"
-                  "<IPv4Address>%s</IPv4Address>\n"
-                  "<IPv4SubnetMask>%s</IPv4SubnetMask>\n"
-                  "<IPv4Gateway>%s</IPv4Gateway>\n"
-                  "<IPv6Address>::</IPv6Address>\n"
-                  "<IPv6Gateway>::</IPv6Gateway>\n"
-                  "<IPv6MaskLen>64</IPv6MaskLen>\n"
-                  "<DHCP>::</DHCP>\n"
-                  "<SoftwareVersion>%s</SoftwareVersion>\n"
-                  "<BootTime>%s</BootTime>\n"
-                  "<Diskrate>%s</Diskrate >\n"
-                  "<Cpurate>%s</Cpurate >\n"
-                  "<Memoryrate>%s</Memoryrate >\n"
-                  "</ProbeMatch>\n",
-                  CConfiguserv::GetBMount(),
-                  CConfiguserv::GetBEnable(),
-                  CConfiguserv::GetPlatformIp().c_str(),
-                  CConfiguserv::GetBoxIp().c_str(),
-                  strUuid.c_str(),
-                  CConfiguserv::GetDeviceId().c_str(),
-                  CConfiguserv::GetDeviceName().c_str(),
-                  CSysInfo::GetdMac().c_str(),
-                  CSysInfo::GetIp().c_str(),
-                  CSysInfo::GetSubMask().c_str(),
-                  CSysInfo::GetGateWay().c_str(),
-                  CVersion::GetVersion(),
-                  CSysInfo::GetLastRebootTime().c_str(),
-                  CSysInfo::GetDiskRate().c_str(),
-                  CSysInfo::GetCpuRate().c_str(),
-                  CSysInfo::GetMemoryRate().c_str());
-    }
+                  "</ProbeMatch>");
 
 
     strMsg += szMsg;
